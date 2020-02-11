@@ -18,7 +18,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,12 +35,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws IOException, ServletException {
         var authentication = getAuthentication(request);
-        if (authentication == null) {
-            filterChain.doFilter(request, response);
-            return;
+        if (authentication != null) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 
@@ -52,9 +48,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             try {
                 var signingKey = securityProperties.getJwtSecret().getBytes();
 
-                var parsedToken = Jwts.parser()
-
+                var parsedToken = Jwts.parserBuilder()
                         .setSigningKey(signingKey)
+                        .build()
                         .parseClaimsJws(token.replace("Bearer ", ""));
 
                 var username = parsedToken
