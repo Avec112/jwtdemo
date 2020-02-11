@@ -35,7 +35,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         var password = request.getParameter("password");
         var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
 
-        return authenticationManager.authenticate(authenticationToken);
+//        if(authenticationToken.isAuthenticated()) {
+        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+        log.debug("Authenticate: {}", authenticate);
+        return authenticate;
+//        }
+
+//        return null;
     }
 
     @Override
@@ -60,7 +66,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .claim("rol", roles)
                 .compact();
 
-        log.debug("token: {}", token);
+        log.debug("Authorization: Bearer {}", token);
 
         response.addHeader(securityProperties.getTokenHeader(), securityProperties.getTokenPrefix() + " " + token);
     }
